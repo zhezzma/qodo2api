@@ -3,7 +3,7 @@ package google_api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -37,7 +37,7 @@ func GetFirebaseToken(req RefreshTokenRequest) (*TokenResponse, error) {
 
 	request, err := http.NewRequest("POST", apiURL+"?key="+req.Key, strings.NewReader(data.Encode()))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %v", err)
+		return nil, fmt.Errorf("failed to create request: %v err: %v", request, err)
 	}
 
 	// Set headers exactly as in the curl command
@@ -50,7 +50,7 @@ func GetFirebaseToken(req RefreshTokenRequest) (*TokenResponse, error) {
 
 	// Send request with timeout
 	client := &http.Client{
-		Timeout: 2 * time.Second,
+		Timeout: 10 * time.Second,
 	}
 	resp, err := client.Do(request)
 	if err != nil {
@@ -58,8 +58,7 @@ func GetFirebaseToken(req RefreshTokenRequest) (*TokenResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	// Read response
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}

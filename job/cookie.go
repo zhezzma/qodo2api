@@ -6,6 +6,7 @@ import (
 	"qodo2api/common/config"
 	logger "qodo2api/common/loggger"
 	google_api "qodo2api/google-api"
+	"strings"
 	"time"
 )
 
@@ -13,21 +14,22 @@ func UpdateCookieTokenTask() {
 	client := cycletls.Init()
 	defer safeClose(client)
 	for {
-		logger.SysLog("qodo2api Scheduled UpdateCookieCreditTask Task Job Start!")
+		logger.SysLog("qodo2api Scheduled UpdateCookieTokenTask Task Job Start!")
 
 		for _, cookie := range config.NewCookieManager().Cookies {
-			tokenInfo, ok := config.QDTokenMap[cookie]
+			split := strings.Split(cookie, "=")
+			tokenInfo, ok := config.QDTokenMap[split[0]]
 			if ok {
 				request := google_api.RefreshTokenRequest{
-					Key:          cookie,
+					Key:          tokenInfo.ApiKey,
 					RefreshToken: tokenInfo.RefreshToken,
 				}
 				token, err := google_api.GetFirebaseToken(request)
 				if err != nil {
 					logger.SysError(fmt.Sprintf("GetFirebaseToken err: %v Req: %v", err, request))
 				} else {
-					config.QDTokenMap[cookie] = config.QDTokenInfo{
-						ApiKey:       cookie,
+					config.QDTokenMap[split[0]] = config.QDTokenInfo{
+						ApiKey:       split[0],
 						RefreshToken: token.RefreshToken,
 						AccessToken:  token.AccessToken,
 					}
@@ -36,7 +38,7 @@ func UpdateCookieTokenTask() {
 
 		}
 
-		logger.SysLog("qodo2api Scheduled UpdateCookieCreditTask Task Job End!")
+		logger.SysLog("qodo2api Scheduled UpdateCookieTokenTask Task Job End!")
 
 		now := time.Now()
 		remainder := now.Minute() % 10
