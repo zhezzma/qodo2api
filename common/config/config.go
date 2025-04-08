@@ -13,7 +13,7 @@ import (
 )
 
 var BackendSecret = os.Getenv("BACKEND_SECRET")
-var KLCookie = os.Getenv("QD_COOKIE")
+var QDCookie = os.Getenv("QD_COOKIE")
 var IpBlackList = strings.Split(os.Getenv("IP_BLACK_LIST"), ",")
 var ProxyUrl = env.String("PROXY_URL", "")
 var ChineseChatEnabled = env.Bool("CHINESE_CHAT_ENABLED", true)
